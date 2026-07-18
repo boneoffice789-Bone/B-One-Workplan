@@ -1,0 +1,662 @@
+
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B-One Engineering - Daily Task Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { 
+            --primary-color: #cc0000; 
+            --primary-dark: #990000;
+            --bg-color: #f4f6f9; 
+            --text-dark: #0f172a;
+            --text-card-detail: #1e293b; 
+            --card-radius: 16px;
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            font-family: 'Noto Sans Lao', sans-serif; 
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🔴 ສ່ວນຫົວໃສ່ສີແດງຄືເກົ່າ ແບບ Gradient ສະຫງ່າງາມ */
+        .app-header { 
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); 
+            color: white; 
+            padding: 20px 0; 
+            border-bottom: 4px solid #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .brand-title { font-weight: 700; letter-spacing: 0.5px; color: #ffffff; font-size: 1.4rem; }
+        .brand-subtitle { font-size: 0.9rem; color: #ffe6e6; font-weight: 400; }
+
+        /* ກາດວຽກ */
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+        
+        .task-card { 
+            border: none;
+            border-left: 6px solid var(--primary-color); 
+            margin-bottom: 16px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+        }
+        
+        .task-detail-text {
+            color: var(--text-card-detail) !important;
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
+
+        .btn-modern {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 50% !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: none;
+            background-color: #f1f5f9;
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+        .btn-action:hover { transform: scale(1.1); }
+        .btn-action-success:hover { background-color: #dcfce7; color: #15803d; }
+        .btn-action-warning:hover { background-color: #fef9c3; color: #a16207; }
+        .btn-action-danger:hover { background-color: #fee2e2; color: #b91c1c; }
+        .btn-action-carry:hover { background-color: #dbeafe; color: #1d4ed8; }
+
+        /* 🔴 ປັບປຸງ: Progress Bar ສະແດງສີແດງໃນສ່ວນທີ່ຍັງ */
+        .progress { height: 12px; border-radius: 20px; background-color: #ef4444; overflow: hidden; }
+        .progress-bar-done { background: linear-gradient(90deg, #22c55e, #4ade80); height: 100%; }
+
+        .badge-modern {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-today { background-color: #fee2e2; color: #b91c1c; }
+        .badge-tomorrow { background-color: #dbeafe; color: #1d4ed8; }
+
+        /* 🔵 ກ່ອງໝາຍເຫດສືບຕໍ່ວຽກ ໃຫ້ມີພື້ນຫຼັງສະຫວ່າງ ຕົວໜັງສືເຂັ້ມ ອ່ານງ່າຍຊັດເຈນ */
+        .carry-note-box {
+            background-color: #eff6ff !important;
+            border-left: 4px solid #1d4ed8 !important;
+            color: #1e40af !important;
+            font-weight: 600 !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            margin-top: 8px !important;
+        }
+
+        /* 🔘 ກ່ອງໝາຍເຫດທຳມະດາ (ເຊັ່ນ Test) ປັບໃຫ້ເປັນພື້ນເທົາອ່ອນ ຂອບເທົາເຂັ້ມ ອ່ານງ່າຍຊັດເຈນ */
+        .normal-note-box {
+            background-color: #f1f5f9 !important;
+            border-left: 4px solid #64748b !important;
+            color: #1e293b !important;
+            font-weight: 600 !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            margin-top: 8px !important;
+        }
+
+        /* ຈັດການກ່ອງເລືອກລາຍຊື່ໃຫ້ເລືອກງ່າຍ */
+        .member-checkbox-group {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .swal2-popup { font-family: 'Noto Sans Lao', sans-serif !important; border-radius: 16px !important; }
+        #loadingSpinner { display: none; text-align: center; margin: 40px 0; color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+    <header class="app-header mb-4">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-helmet-safety fa-2x me-3 text-white"></i>
+                <div>
+                    <h4 class="brand-title mb-0">B-ONE ENGINEERING</h4>
+                    <div class="brand-subtitle">ລະບົບຈັດການຕາຕະລາງເຮັດວຽກປະຈຳວັນ</div>
+                </div>
+            </div>
+            
+            <div class="btn-group rounded-3 shadow-sm overflow-hidden" role="group">
+                <button class="btn btn-success btn-sm fw-bold px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i> Excel</button>
+                <button class="btn btn-light btn-sm fw-bold px-3 text-danger" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf me-1"></i> PDF</button>
+                <button class="btn btn-warning btn-sm fw-bold px-3 text-dark" onclick="exportToJPEG()"><i class="fa-solid fa-file-image me-1"></i> JPEG</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container pb-5">
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--text-dark);">
+                    <i class="fa-solid fa-circle-plus text-danger"></i> <span id="formTitle">ເພີ່ມໜ້າວຽກໃໝ່</span>
+                </h6>
+                <form id="taskForm" class="row g-3">
+                    <input type="hidden" id="editTaskId">
+                    <div class="col-md-8">
+                        <label class="form-label text-secondary small fw-bold">ຊື່ລາຍການວຽກ *</label>
+                        <input type="text" id="taskName" class="form-control" placeholder="ພິມລາຍລະອຽດໜ້າວຽກ..." required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small fw-bold">ປະເພດແຜນວຽກ *</label>
+                        <select id="taskType" class="form-select" required>
+                            <option value="today" selected>ວຽກປະຈຳວັນ (ມື້ນີ້)</option>
+                            <option value="tomorrow">ແຜນວຽກມື້ຕໍ່ໄປ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">ຫົວໜ້າທີມ</label>
+                        <select id="taskLeader" class="form-select">
+                            <option value="">-- ເລືອກຫົວໜ້າທີມ --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-bold">ລູກທີມ (ເລືອກໄດ້ຫຼາຍຊື່)</label>
+                        <div id="taskMembersContainer" class="member-checkbox-group">
+                            <span class="text-muted small">ກຳລັງໂຫຼດລາຍຊື່...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3"><label class="form-label text-secondary small fw-bold">ມື້ເລີ່ມວຽກ</label><input type="date" id="taskStartDate" class="form-control"></div>
+                    <div class="col-md-3"><label class="form-label text-secondary small fw-bold">ມື້ຕ້ອງສຳເລັດ</label><input type="date" id="taskDate" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-secondary small fw-bold">ໝາຍເຫດ</label><input type="text" id="taskNote" class="form-control" placeholder="ໝາຍເຫດເພີ່ມເຕີມ..."></div>
+                    <div class="col-12 text-end mt-4">
+                        <button type="button" class="btn btn-light btn-modern me-2" id="cancelEditBtn" style="display: none;" onclick="cancelEdit()">ຍົກເລີກ</button>
+                        <button type="submit" class="btn btn-danger btn-modern px-4 shadow-sm" id="saveBtn" style="background-color: var(--primary-color);">
+                            <i class="fa-solid fa-paper-plane me-1"></i> ບັນທຶກລົງ Sheet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0 text-secondary">
+                <i class="fa-solid fa-folder-open me-1"></i> ຕາຕະລາງແຜນວຽກທັງໝົດ (<span id="todayDate"></span>)
+            </h6>
+            <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary px-3 py-2 fw-bold" id="taskCount">ກຳລັງໂຫຼດ...</span>
+        </div>
+        
+        <div id="loadingSpinner">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <p class="mt-2 small fw-bold">ກຳລັງຊິງຄ໌ຂໍ້ມູນ...</p>
+        </div>
+        <div id="taskList"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZo41w5JGKUmnCnV_L5JyJTTqhuC6Q9CW17TMgre6NUt9MEoIqciI13EG08H4IMw9D/exec';
+        
+        let allTasks = []; 
+        let leaderList = [];
+        let memberList = [];
+        const todayStr = new Date().toLocaleDateString('en-GB');
+        document.getElementById('todayDate').innerText = todayStr;
+
+        function formatShortDate(dateStr) {
+            if (!dateStr) return '-';
+            return dateStr.split('T')[0];
+        }
+
+        function showNotification(title, icon = 'success') {
+            Swal.fire({
+                title: title, icon: icon, toast: true, position: 'top-end',
+                showConfirmButton: false, timer: 3000, timerProgressBar: true
+            });
+        }
+
+        async function loadTasks() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=read', { method: 'GET', redirect: 'follow' });
+                const resData = await response.json();
+                
+                allTasks = resData.tasks || [];
+                leaderList = resData.leaders || [];
+                memberList = resData.members || [];
+                
+                setupTeamDropdowns();
+                renderTasks();
+            } catch (error) {
+                console.error("Error:", error);
+                showNotification("ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້!", 'error');
+            }
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function setupTeamDropdowns() {
+            const leaderSelect = document.getElementById('taskLeader');
+            const currentLeader = leaderSelect.value;
+            leaderSelect.innerHTML = '<option value="">-- ເລືອກຫົວໜ້າທີມ --</option>';
+            leaderList.forEach(name => {
+                leaderSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+            if(currentLeader) leaderSelect.value = currentLeader;
+
+            const membersContainer = document.getElementById('taskMembersContainer');
+            membersContainer.innerHTML = '';
+            if(memberList.length === 0) {
+                membersContainer.innerHTML = '<span class="text-muted small">ບໍ່ມີລາຍຊື່ລູກທີມໃນ Sheet Team</span>';
+                return;
+            }
+            memberList.forEach((name, idx) => {
+                membersContainer.innerHTML += `
+                    <div class="form-check">
+                        <input class="form-check-input member-checkbox" type="checkbox" value="${name}" id="mbr_${idx}">
+                        <label class="form-check-label small fw-bold" for="mbr_${idx}">${name}</label>
+                    </div>`;
+            });
+        }
+
+        function getSelectedMembers() {
+            const checked = document.querySelectorAll('.member-checkbox:checked');
+            return Array.from(checked).map(cb => cb.value).join(', ');
+        }
+
+        function setSelectedMembers(membersStr) {
+            document.querySelectorAll('.member-checkbox').forEach(cb => cb.checked = false);
+            if(!membersStr) return;
+            const arr = membersStr.split(/[,，\s]+/);
+            document.querySelectorAll('.member-checkbox').forEach(cb => {
+                if(arr.includes(cb.value)) cb.checked = true;
+            });
+        }
+
+        async function saveToGoogleSheet() {
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ກຳລັງຊິງຄ໌...';
+            saveBtn.disabled = true;
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors', 
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(allTasks)
+                });
+                showNotification("ຊິງຄ໌ຂໍ້ມູນກັບ Sheet ສຳເລັດ!");
+                await loadTasks(); 
+            } catch (error) {
+                console.error("Error:", error);
+                showNotification("ເກີດຂໍ້ຜິດພາດ!", 'error');
+            }
+            saveBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ບັນທຶກລົງ Sheet';
+            saveBtn.disabled = false;
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            document.getElementById('taskCount').innerText = `${allTasks.length} ໜ້າວຽກ`;
+            
+            if(allTasks.length === 0) {
+                taskList.innerHTML = '<div class="text-center p-5 text-muted card border-0 bg-white">📭 ບໍ່ມີໜ້າວຽກໃນລະບົບ</div>';
+                return;
+            }
+
+            allTasks.forEach((task, index) => {
+                const card = document.createElement('div');
+                card.className = 'card task-card';
+                
+                const isTomorrow = task.note && task.note.includes('[TOMORROW_PLAN]');
+                const typeBadge = isTomorrow 
+                    ? '<span class="badge-modern badge-tomorrow"><i class="fa-solid fa-clock"></i> ແຜນວຽກມື້ຕໍ່ໄປ</span>' 
+                    : '<span class="badge-modern badge-today"><i class="fa-solid fa-bolt"></i> ວຽກປະຈຳວັນ</span>';
+                
+                let isCarryNote = task.note && task.note.includes('[ອີງໃສ່ວຽກເກົ່າ');
+                let cleanNote = task.note ? task.note.replace('[TOMORROW_PLAN]', '').trim() : '';
+
+                let carryForwardBtn = '';
+                if (task.doneProgress < 100) {
+                    carryForwardBtn = `<button class="btn btn-action btn-action-carry" onclick="carryForwardTask(${task.id})" title="ສືບຕໍ່ວຽກນີ້"><i class="fa-solid fa-arrows-spin"></i></button>`;
+                }
+
+                // 🛠️ ປັບປຸງ: ກວດສອບປະເພດຂໍ້ຄວາມໝາຍເຫດ ເພື່ອສະແດງຜົນກ່ອງສີໃຫ້ເໝາະສົມ ແລະ ເຫັນຊັດເຈນທັງໝົດ
+                let noteHtml = '';
+                if(cleanNote) {
+                    let noteClass = isCarryNote ? "carry-note-box" : "normal-note-box";
+                    noteHtml = `<p class="${noteClass}"><i class="fa-solid fa-circle-exclamation me-1"></i> <b>ໝາຍເຫດ:</b> ${cleanNote}</p>`;
+                }
+
+                card.innerHTML = `
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div class="w-70">
+                                <div class="mb-2">${typeBadge}</div>
+                                <h6 class="fw-bold mb-2 text-dark" style="font-size: 1.05rem; line-height: 1.5;">${index + 1}. ${task.name}</h6>
+                                <div class="row g-2 small mb-2">
+                                    <div class="col-6 task-detail-text"><i class="fa-solid fa-user-tie me-1"></i> <b>ຫົວໜ້າ:</b> ${task.leader || '-'}</div>
+                                    <div class="col-6 task-detail-text"><i class="fa-solid fa-users me-1"></i> <b>ລູກທີມ:</b> ${task.members || '-'}</div>
+                                    <div class="col-12 text-danger fw-bold mt-1">
+                                        <i class="fa-solid fa-calendar-days me-1"></i> <b>ໄລຍະเวลา:</b> ${formatShortDate(task.startDate)} ຫາ ${formatShortDate(task.date)}
+                                    </div>
+                                </div>
+                                ${noteHtml}
+                            </div>
+                            <div class="action-btns d-flex gap-1">
+                                ${carryForwardBtn}
+                                <button class="btn btn-action btn-action-success" onclick="updateProgress(${task.id})" title="ອັບເດດ"><i class="fa-solid fa-check"></i></button>
+                                <button class="btn btn-action btn-action-warning" onclick="editTask(${task.id})" title="ແກ້ໄຂ"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-action btn-action-danger" onclick="deleteTask(${task.id})" title="ລົບ"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-top border-light">
+                            <div class="d-flex justify-content-between mb-1 small fw-bold">
+                                <span class="text-success">ແລ້ວ ${task.doneProgress}%</span>
+                                <span class="text-danger">ຍັງ ${task.pendingProgress}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-done" style="width: ${task.doneProgress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                taskList.appendChild(card);
+            });
+        }
+
+        function carryForwardTask(id) {
+            const originTask = allTasks.find(t => t.id === id);
+            if(!originTask) return;
+
+            Swal.fire({
+                title: 'ຢືນຢັນການສືບຕໍ່ວຽກ?',
+                text: `ທ່ານຕ້ອງການສືບຕໍ່ວຽກ "${originTask.name}" ໄປເປັນແຜນວຽກມື້ຕໍ່ໄປບໍ່?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#cc0000', cancelButtonColor: '#64748b',
+                confirmButtonText: 'ເຈົ້າ, ສືບຕໍ່ວຽກ', cancelButtonText: 'ຍົກເລີກ'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    let cleanNote = originTask.note ? originTask.note.replace('[TOMORROW_PLAN]', '').trim() : '';
+                    
+                    let calculatedStartDate = '';
+                    let calculatedEndDate = originTask.date ? originTask.date.split('T')[0] : ''; 
+                    
+                    if (originTask.date) {
+                        const oldEndDateStr = originTask.date.split('T')[0];
+                        const oldEndDateObj = new Date(oldEndDateStr);
+                        oldEndDateObj.setDate(oldEndDateObj.getDate() + 1); 
+                        calculatedStartDate = oldEndDateObj.toISOString().split('T')[0];
+                        
+                        if (calculatedStartDate > calculatedEndDate) {
+                            calculatedEndDate = calculatedStartDate;
+                        }
+                    }
+
+                    const newTask = {
+                        id: Date.now(), 
+                        name: originTask.name + " (ສືບຕໍ່ວຽກ)",
+                        leader: originTask.leader, members: originTask.members,
+                        startDate: calculatedStartDate, 
+                        date: calculatedEndDate,       
+                        note: '[TOMORROW_PLAN] ' + (cleanNote ? cleanNote + ' ' : '') + `[ອີງໃສ່ວຽກເກົ່າເຮັດໄດ້ ${originTask.doneProgress}%]`,
+                        doneProgress: originTask.doneProgress, pendingProgress: originTask.pendingProgress  
+                    };
+
+                    allTasks.push(newTask); 
+                    renderTasks();
+                    await saveToGoogleSheet(); 
+                }
+            });
+        }
+
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editTaskId').value;
+            const isTomorrow = document.getElementById('taskType').value === 'tomorrow';
+            let noteValue = document.getElementById('taskNote').value;
+            
+            if(isTomorrow && !noteValue.includes('[TOMORROW_PLAN]')) { noteValue = '[TOMORROW_PLAN] ' + noteValue; }
+            else if (!isTomorrow) { noteValue = noteValue.replace('[TOMORROW_PLAN]', '').trim(); }
+
+            const taskData = {
+                name: document.getElementById('taskName').value, 
+                leader: document.getElementById('taskLeader').value,
+                members: getSelectedMembers(), 
+                startDate: document.getElementById('taskStartDate').value,
+                date: document.getElementById('taskDate').value, note: noteValue,
+            };
+
+            if (editId) {
+                const index = allTasks.findIndex(t => t.id == editId);
+                taskData.id = parseInt(editId);
+                taskData.doneProgress = allTasks[index].doneProgress; taskData.pendingProgress = allTasks[index].pendingProgress;
+                allTasks[index] = taskData;
+                cancelEdit();
+            } else {
+                taskData.id = Date.now(); taskData.doneProgress = 0; taskData.pendingProgress = 100;
+                allTasks.push(taskData); 
+            }
+            
+            renderTasks();
+            await saveToGoogleSheet();
+            this.reset();
+            setSelectedMembers('');
+        });
+
+        function deleteTask(id) {
+            Swal.fire({
+                title: 'ທ່ານແນ່ໃຈບໍ່?', text: "ຕ້ອງການລົບລາຍການນີ້ແທ້ບໍ່?", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#cc0000', cancelButtonColor: '#64748b',
+                confirmButtonText: 'ລົບເລີຍ', cancelButtonText: 'ຍົກເລີກ'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    allTasks = allTasks.filter(t => t.id !== id);
+                    renderTasks(); await saveToGoogleSheet();
+                }
+            });
+        }
+
+        function editTask(id) {
+            const task = allTasks.find(t => t.id === id);
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('taskName').value = task.name; 
+            document.getElementById('taskLeader').value = task.leader || '';
+            setSelectedMembers(task.members || ''); 
+            document.getElementById('taskStartDate').value = formatShortDate(task.startDate); 
+            document.getElementById('taskDate').value = formatShortDate(task.date); 
+            let isTomorrow = task.note && task.note.includes('[TOMORROW_PLAN]');
+            document.getElementById('taskType').value = isTomorrow ? 'tomorrow' : 'today';
+            document.getElementById('taskNote').value = task.note ? task.note.replace('[TOMORROW_PLAN]', '').trim() : '';
+            document.getElementById('formTitle').innerText = "ແກ້ໄຂໜ້າວຽກ";
+            document.getElementById('saveBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ອັບເດດລົງ Sheet';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+            window.scrollTo(0, 0);
+        }
+
+        function cancelEdit() {
+            document.getElementById('taskForm').reset();
+            setSelectedMembers('');
+            document.getElementById('editTaskId').value = '';
+            document.getElementById('formTitle').innerText = "ເພີ່ມໜ້າວຽກໃໝ່";
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        async function updateProgress(id) {
+            const taskIndex = allTasks.findIndex(t => t.id === id);
+            const { value: newProgress } = await Swal.fire({
+                title: 'ອັບເດດຄວາມຄືบໜ້າ',
+                text: `ໃສ່ຕົວເລກເປີເຊັນ (0-100) ສ່ວຍໜ້າວຽກ: "${allTasks[taskIndex].name}"`,
+                input: 'number', inputValue: allTasks[taskIndex].doneProgress,
+                inputAttributes: { min: 0, max: 100, step: 1 },
+                showCancelButton: true, confirmButtonColor: '#22c55e', confirmButtonText: 'ບັນທຶກ', cancelButtonText: 'ຍົກເລີກ',
+                inputValidator: (value) => { if (!value || value < 0 || value > 100) { return 'ກະລຸນາປ້ອນຕົວເລກ 0 ຫາ 100 ເທົ່ານັ້ນ!' } }
+            });
+            if (newProgress) {
+                let progressInt = parseInt(newProgress);
+                allTasks[taskIndex].doneProgress = progressInt; allTasks[taskIndex].pendingProgress = 100 - progressInt;
+                renderTasks(); await saveToGoogleSheet();
+            }
+        }
+
+        function generateReportHTML() {
+            let htmlContent = `
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #cc0000; padding-bottom: 10px;">
+                    <h2 style="color: #cc0000; font-weight: bold; margin-bottom: 5px; font-family: 'Noto Sans Lao'; font-size: 26px;">B-ONE ENGINEERING</h2>
+                    <h4 style="margin-top: 0; font-weight: bold; font-family: 'Noto Sans Lao'; font-size: 18px;">ຕາຕະລາງສະຫຼຸບແຜນງານ ແລະ ຄວາມຄືບໜ້າວຽກທັງໝົດ</h4>
+                    <p style="color: #555; font-family: 'Noto Sans Lao'; font-size: 14px;">ວັນທີອັບເດດ: ${todayStr}</p>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-family: 'Noto Sans Lao';">
+                    <thead>
+                        <tr style="background-color: #cc0000; color: #ffffff; font-size: 15px;">
+                            <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: 5%;">ລ/ດ</th>
+                            <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: 35%;">ລາຍການວຽກ</th>
+                            <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: 25%;">ທີມງານ</th>
+                            <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: 20%;">ເລີ່ມ-ກຳນົດ</th>
+                            <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: 15%;">ສະຖານະ</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            allTasks.forEach((t, i) => {
+                let isTomorrow = t.note && t.note.includes('[TOMORROW_PLAN]');
+                let isCarry = t.note && t.note.includes('[ອີງໃສ່ວຽກເກົ່າ');
+                let cleanNote = t.note ? t.note.replace('[TOMORROW_PLAN]', '').trim() : '';
+                let typeText = isTomorrow ? '<span style="color:#0056b3; font-weight:bold;">[ແຜນວຽກມື້ຕໍ່ໄປ]</span>' : '<span style="color:#cc0000; font-weight:bold;">[ວຽກປະຈຳວັນ]</span>';
+
+                let memberListHtml = '';
+                if (t.members && t.members.trim() !== '') {
+                    let memberArray = t.members.split(/[,，\s]+/);
+                    let listNum = 1;
+                    memberArray.forEach(m => { if(m.trim() !== '') { memberListHtml += `<div style="padding-left: 10px;">${listNum}. ${m.trim()}</div>`; listNum++; } });
+                } else { memberListHtml = '<span style="color:#999;">- ບໍ່ມີ -</span>'; }
+
+                // 🛠️ ປັບປຸງ: ໃຫ້ໃບລີພອດ PDF/JPEG ສະແດງສີກ່ອງໝາຍເຫດໃຫ້ກົງກັນກັບໜ້າເວັບ
+                let reportNoteHtml = '';
+                if(cleanNote) {
+                    let noteBgColor = isCarry ? '#eff6ff' : '#f1f5f9';
+                    let noteBorderColor = isCarry ? '#1d4ed8' : '#64748b';
+                    let noteTextColor = isCarry ? '#1e40af' : '#1e293b';
+                    reportNoteHtml = `<div style="margin-top:6px; background-color:${noteBgColor}; padding:6px 10px; border-left:4px solid ${noteBorderColor}; color:${noteTextColor}; font-size:12px; font-weight:bold; border-radius:4px;">*ໝາຍເຫດ: ${cleanNote}</div>`;
+                }
+
+                htmlContent += `
+                    <tr style="background-color: ${i % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                        <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${i + 1}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1; vertical-align: top;">
+                            <div style="margin-bottom:2px; font-size:11px;">${typeText}</div>
+                            <div style="font-weight: bold; color: #111; font-size: 14px;">${t.name}</div>
+                            ${reportNoteHtml}
+                        </td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1; vertical-align: top;">
+                            <div style="background-color: #f1f5f9; padding: 2px 6px; font-weight: bold; border-left: 3px solid #334155; margin-bottom: 5px;">ຫົວໜ້າທີມ: ${t.leader || '-'}</div>
+                            <div style="font-weight: bold; color: #475569; margin-bottom: 2px; font-size:12px;">ລູກທີມ:</div>
+                            <div style="font-size:12px; color:#334155;">${memberListHtml}</div>
+                        </td>
+                        <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: top; font-size: 13px; font-weight: 500;">
+                            ${formatShortDate(t.startDate)}<br><span style="color:#64748b; font-size:11px;">ຫາ</span><br>${formatShortDate(t.date)}
+                        </td>
+                        <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14px;">
+                            <span style="color: #22c55e;">ແລ້ວ ${t.doneProgress}%</span><br>
+                            <span style="color: #ef4444; font-size: 12px;">ຍັງ ${t.pendingProgress}%</span>
+                        </td>
+                    </tr>`;
+            });
+            
+            htmlContent += `</tbody></table>
+                <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px; font-family: 'Noto Sans Lao'; padding: 0 10px;">
+                    <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ລາຍງານ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
+                    <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ກວດກາ / ຜູ້ອານຸມັດ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
+                </div>`;
+            return htmlContent;
+        }
+
+        function exportToExcel() {
+            const exportData = allTasks.map((t, index) => ({
+                "#": index + 1, "ປະເພດວຽກ": t.note && t.note.includes('[TOMORROW_PLAN]') ? 'ແຜນວຽກມື້ຕໍ່ໄປ' : 'ວຽກປະຈຳວັນ',
+                "ລາຍການວຽກ": t.name, "ຫົວໜ້າທີມ": t.leader, "ລູກທີມ": t.members,
+                "ສຳເລັດແລ້ວ (%)": t.doneProgress, "ຍັງຄ້າງ (%)": t.pendingProgress,
+                "ມື້ເລີ່ມວຽກ": formatShortDate(t.startDate), "ມື້ກຳນົດສົ່ງ": formatShortDate(t.date),
+                "ໝາຍເຫດ": t.note ? t.note.replace('[TOMORROW_PLAN]', '').trim() : ''
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Database");
+            XLSX.writeFile(workbook, `B-One_Data_${todayStr.replace(/\//g, '-')}.xlsx`);
+            showNotification("ດາວໂຫຼດ Excel ສຳເລັດ!");
+        }
+
+        function exportToPDF() {
+            const reportDiv = document.createElement('div');
+            reportDiv.style.padding = '25px'; 
+            reportDiv.style.width = '1060px'; 
+            reportDiv.style.backgroundColor = '#ffffff';
+            reportDiv.innerHTML = generateReportHTML();
+            
+            html2pdf().set({ 
+                margin: [8, 8, 8, 8], 
+                filename: `Report_B_One_${todayStr}.pdf`, 
+                html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+            }).from(reportDiv).save().then(() => showNotification("ດາວໂຫຼດ PDF ສຳເລັດ!"));
+        }
+
+        function exportToJPEG() {
+            const reportDiv = document.createElement('div');
+            reportDiv.style.padding = '35px'; 
+            reportDiv.style.width = '1120px'; 
+            reportDiv.style.backgroundColor = '#ffffff';
+            reportDiv.innerHTML = generateReportHTML();
+            document.body.appendChild(reportDiv); 
+
+            html2canvas(reportDiv, { scale: 2, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Report_B_One_${todayStr}.jpeg`;
+                link.href = canvas.toDataURL('image/jpeg', 1.0); link.click();
+                document.body.removeChild(reportDiv); showNotification("ດາວໂຫຼດ JPEG ສຳເລັດ!");
+            });
+        }
+
+        loadTasks();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
