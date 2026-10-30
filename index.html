@@ -477,14 +477,16 @@
                 if (result.isConfirmed) {
                     const old = parseNote(originTask.note);
 
-                    let calculatedStartDate = '';
-                    let calculatedEndDate = toInputDate(originTask.date);
+                    // ສືບຕໍ່ວຽກ: ເລີ່ມ = ມື້ເລີ່ມເກົ່າ + 1 ມື້, ກຳນົດສຳເລັດ = ເທົ່າເກົ່າ
+                    // ຕົວຢ່າງ 31/10 - 05/11  ->  01/11 - 05/11
+                    const oldStart = toInputDate(originTask.startDate);
+                    const oldEnd = toInputDate(originTask.date);
+                    let calculatedStartDate = oldStart ? addDays(oldStart, 1) : '';
+                    let calculatedEndDate = oldEnd;
 
-                    if (calculatedEndDate) {
-                        calculatedStartDate = addDays(calculatedEndDate, 1);
-                        if (calculatedStartDate > calculatedEndDate) {
-                            calculatedEndDate = calculatedStartDate;
-                        }
+                    // ຖ້າມື້ເລີ່ມໃໝ່ເກີນມື້ກຳນົດ ໃຫ້ກຳນົດສຳເລັດເທົ່າກັບມື້ເລີ່ມ
+                    if (calculatedStartDate && calculatedEndDate && calculatedStartDate > calculatedEndDate) {
+                        calculatedEndDate = calculatedStartDate;
                     }
 
                     const carryText = (old.text ? old.text + ' ' : '') + `[ອີງໃສ່ວຽກເກົ່າເຮັດໄດ້ ${originTask.doneProgress}%]`;
