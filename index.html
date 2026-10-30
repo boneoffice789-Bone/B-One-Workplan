@@ -630,11 +630,11 @@
                         <tr style="background-color: #cc0000; color: #ffffff; font-size: 15px;">
                             ${th(5, 'ລ/ດ')}
                             ${th(25, 'ລາຍການວຽກ')}
-                            ${th(18, 'ທີມງານ')}
+                            ${th(17, 'ທີມງານ')}
                             ${th(12, 'ເລີ່ມ-ກຳນົດ')}
-                            ${th(11, 'ສະຖານະ')}
-                            ${th(11, 'ຄາດວ່າມື້ອື່ນ')}
-                            ${th(18, 'ໝາຍເຫດ')}
+                            ${th(13, '% ຄາດວ່າຈະສຳເລັດມື້ອື່ນ')}
+                            ${th(13, '% ຄວາມຄືບໜ້າ')}
+                            ${th(15, 'ໝາຍເຫດ')}
                         </tr>
                     </thead>`;
         }
@@ -680,11 +680,11 @@
                             ${formatShortDate(t.startDate)}<br><span style="color:#64748b; font-size:11px;">ຫາ</span><br>${formatShortDate(t.date)}
                         </td>
                         <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14px;">
-                            <span style="color: #22c55e;">ແລ້ວ ${t.doneProgress}%</span><br>
-                            <span style="color: #ef4444; font-size: 12px;">ຍັງ ${t.pendingProgress}%</span>
+                            ${expectedCell}
                         </td>
                         <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14px;">
-                            ${expectedCell}
+                            <span style="color: #22c55e;">ແລ້ວ ${t.doneProgress}%</span><br>
+                            <span style="color: #ef4444; font-size: 12px;">ຍັງ ${t.pendingProgress}%</span>
                         </td>
                         <td style="padding: 10px 8px; border: 1px solid #cbd5e1; vertical-align: top; font-size: 12px;">
                             ${noteCell}
@@ -764,8 +764,8 @@
                     "#": index + 1,
                     "ປະເພດວຽກ": note.isTomorrow ? 'ແຜນວຽກມື້ຕໍ່ໄປ' : 'ວຽກປະຈຳວັນ',
                     "ລາຍການວຽກ": t.name, "ຫົວໜ້າທີມ": t.leader, "ລູກທີມ": t.members,
-                    "ສຳເລັດແລ້ວ (%)": t.doneProgress, "ຍັງຄ້າງ (%)": t.pendingProgress,
-                    "ຄາດວ່າມື້ອື່ນສຳເລັດ (%)": note.expected !== null ? note.expected : '',
+                    "% ຄາດວ່າຈະສຳເລັດມື້ອື່ນ": note.expected !== null ? note.expected : '',
+                    "% ຄວາມຄືບໜ້າ": t.doneProgress, "ຍັງຄ້າງ (%)": t.pendingProgress,
                     "ມື້ເລີ່ມວຽກ": formatShortDate(t.startDate), "ມື້ກຳນົດສົ່ງ": formatShortDate(t.date),
                     "ໝາຍເຫດ": note.text
                 };
