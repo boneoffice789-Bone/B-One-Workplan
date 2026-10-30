@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao+Looped:wght@400;500;600;700&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,7 +31,8 @@
 
         body {
             background-color: var(--bg-color);
-            font-family: 'Noto Sans Lao', sans-serif;
+            font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif;
+            line-height: 1.6;
             color: var(--text-dark);
             -webkit-font-smoothing: antialiased;
         }
@@ -134,7 +135,7 @@
             border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; background: #fff;
         }
 
-        .swal2-popup { font-family: 'Noto Sans Lao', sans-serif !important; border-radius: 16px !important; }
+        .swal2-popup { font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif !important; border-radius: 16px !important; }
         #loadingSpinner { display: none; text-align: center; margin: 40px 0; color: var(--primary-color); }
     </style>
 </head>
@@ -611,29 +612,31 @@
            ລາຍງານ PDF / JPEG
            ຕາຕະລາງ: ລ/ດ | ລາຍການວຽກ | ທີມງານ | ເລີ່ມ-ກຳນົດ | ສະຖານະ | ຄາດວ່າມື້ອື່ນ | ໝາຍເຫດ (ຊ່ອງສຸດທ້າຍ)
            ============================================================ */
+        const REPORT_FONT = "'Noto Sans Lao Looped','Noto Sans Lao',sans-serif";
+
         function reportTopHtml() {
             return `
                 <div data-part="top" style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #cc0000; padding-bottom: 10px;">
                     <img src="${LOGO_DATA}" alt="B-One Engineering" style="height: 90px; width: auto; margin-bottom: 8px;">
-                    <h4 style="margin-top: 0; font-weight: bold; font-family: 'Noto Sans Lao'; font-size: 18px;">ຕາຕະລາງສະຫຼຸບແຜນງານ ແລະ ຄວາມຄືບໜ້າວຽກທັງໝົດ</h4>
-                    <p style="color: #555; font-family: 'Noto Sans Lao'; font-size: 14px;">ວັນທີອັບເດດ: ${todayStr}</p>
+                    <h4 style="margin-top: 0; font-weight: bold; font-family: ${REPORT_FONT}; font-size: 18px;">ຕາຕະລາງສະຫຼຸບແຜນງານ ແລະ ຄວາມຄືບໜ້າວຽກທັງໝົດ</h4>
+                    <p style="color: #555; font-family: ${REPORT_FONT}; font-size: 14px;">ວັນທີອັບເດດ: ${todayStr}</p>
                 </div>`;
         }
 
         function reportTableOpen() {
-            return `<table style="width: 100%; border-collapse: collapse; font-size: 14px; font-family: 'Noto Sans Lao';">`;
+            return `<table style="width: 100%; border-collapse: collapse; font-size: 14px; font-family: ${REPORT_FONT};">`;
         }
 
         function reportTheadHtml() {
-            const th = (w, label) => `<th style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: ${w}%;">${label}</th>`;
+            const th = (w, label) => `<th style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; line-height: 1.5; width: ${w}%;">${label}</th>`;
             return `<thead>
                         <tr style="background-color: #cc0000; color: #ffffff; font-size: 15px;">
                             ${th(5, 'ລ/ດ')}
                             ${th(25, 'ລາຍການວຽກ')}
                             ${th(17, 'ທີມງານ')}
                             ${th(12, 'ເລີ່ມ-ກຳນົດ')}
-                            ${th(13, '% ຄາດວ່າຈະສຳເລັດມື້ອື່ນ')}
-                            ${th(13, '% ຄວາມຄືບໜ້າ')}
+                            ${th(14, '% ຄາດວ່າຈະ<br>ສຳເລັດມື້ອື່ນ')}
+                            ${th(12, '% ຄວາມ<br>ຄືບໜ້າ')}
                             ${th(15, 'ໝາຍເຫດ')}
                         </tr>
                     </thead>`;
@@ -693,7 +696,7 @@
         }
 
         function reportSignatureHtml() {
-            return `<div data-part="sig" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px; font-family: 'Noto Sans Lao'; padding: 0 10px;">
+            return `<div data-part="sig" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px; font-family: ${REPORT_FONT}; padding: 0 10px;">
                     <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ລາຍງານ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
                     <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ກວດກາ / ຜູ້ອານຸມັດ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
                 </div>`;
@@ -712,7 +715,7 @@
             const pageH = Math.floor(PDF_W * 194 / 281 * 0.94);
             const padTop = 20;
             const usable = pageH - padTop;
-            const pageStyle = `box-sizing:border-box; width:${PDF_W}px; padding:${padTop}px 25px 0 25px; background:#fff;`;
+            const pageStyle = `box-sizing:border-box; width:${PDF_W}px; padding:${padTop}px 25px 0 25px; background:#fff; font-family:${REPORT_FONT}; line-height:1.6; letter-spacing:0;`;
 
             // 1) ວັດແທກຄວາມສູງຈິງຂອງແຕ່ລະສ່ວນ
             const rowsHtml = allTasks.map((t, i) => reportRowHtml(t, i)).join('');
@@ -757,6 +760,13 @@
             return html;
         }
 
+        async function ensureFonts() {
+            try {
+                await Promise.all(['400', '500', '600', '700'].map(w => document.fonts.load(`${w} 14px "Noto Sans Lao Looped"`, 'ກຂຄງ')));
+                await document.fonts.ready;
+            } catch (e) { /* ignore */ }
+        }
+
         function exportToExcel() {
             const exportData = allTasks.map((t, index) => {
                 const note = parseNote(t.note);
@@ -777,8 +787,10 @@
             showNotification("ດາວໂຫຼດ Excel ສຳເລັດ!");
         }
 
-        function exportToPDF() {
+        async function exportToPDF() {
+            await ensureFonts();
             const reportDiv = document.createElement('div');
+            reportDiv.style.fontFamily = REPORT_FONT;
             reportDiv.style.width = PDF_W + 'px';
             reportDiv.style.backgroundColor = '#ffffff';
             reportDiv.innerHTML = buildPagedReportHTML();
@@ -792,8 +804,11 @@
             }).from(reportDiv).save().then(() => showNotification("ດາວໂຫຼດ PDF ສຳເລັດ!"));
         }
 
-        function exportToJPEG() {
+        async function exportToJPEG() {
+            await ensureFonts();
             const reportDiv = document.createElement('div');
+            reportDiv.style.fontFamily = REPORT_FONT;
+            reportDiv.style.lineHeight = '1.6';
             reportDiv.style.padding = '35px';
             reportDiv.style.width = '1120px';
             reportDiv.style.backgroundColor = '#ffffff';
