@@ -611,17 +611,22 @@
            ລາຍງານ PDF / JPEG
            ຕາຕະລາງ: ລ/ດ | ລາຍການວຽກ | ທີມງານ | ເລີ່ມ-ກຳນົດ | ສະຖານະ | ຄາດວ່າມື້ອື່ນ | ໝາຍເຫດ (ຊ່ອງສຸດທ້າຍ)
            ============================================================ */
-        function generateReportHTML() {
-            const th = (w, label) => `<th style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: ${w}%;">${label}</th>`;
-
-            let htmlContent = `
-                <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #cc0000; padding-bottom: 10px;">
+        function reportTopHtml() {
+            return `
+                <div data-part="top" style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #cc0000; padding-bottom: 10px;">
                     <img src="${LOGO_DATA}" alt="B-One Engineering" style="height: 90px; width: auto; margin-bottom: 8px;">
                     <h4 style="margin-top: 0; font-weight: bold; font-family: 'Noto Sans Lao'; font-size: 18px;">ຕາຕະລາງສະຫຼຸບແຜນງານ ແລະ ຄວາມຄືບໜ້າວຽກທັງໝົດ</h4>
                     <p style="color: #555; font-family: 'Noto Sans Lao'; font-size: 14px;">ວັນທີອັບເດດ: ${todayStr}</p>
-                </div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-family: 'Noto Sans Lao';">
-                    <thead>
+                </div>`;
+        }
+
+        function reportTableOpen() {
+            return `<table style="width: 100%; border-collapse: collapse; font-size: 14px; font-family: 'Noto Sans Lao';">`;
+        }
+
+        function reportTheadHtml() {
+            const th = (w, label) => `<th style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; width: ${w}%;">${label}</th>`;
+            return `<thead>
                         <tr style="background-color: #cc0000; color: #ffffff; font-size: 15px;">
                             ${th(5, 'ລ/ດ')}
                             ${th(25, 'ລາຍການວຽກ')}
@@ -631,35 +636,35 @@
                             ${th(11, 'ຄາດວ່າມື້ອື່ນ')}
                             ${th(18, 'ໝາຍເຫດ')}
                         </tr>
-                    </thead>
-                    <tbody>`;
+                    </thead>`;
+        }
 
-            allTasks.forEach((t, i) => {
-                const note = parseNote(t.note);
-                const typeText = note.isTomorrow
-                    ? '<span style="color:#0056b3; font-weight:bold;">[ແຜນວຽກມື້ຕໍ່ໄປ]</span>'
-                    : '<span style="color:#cc0000; font-weight:bold;">[ວຽກປະຈຳວັນ]</span>';
+        function reportRowHtml(t, i) {
+            const note = parseNote(t.note);
+            const typeText = note.isTomorrow
+                ? '<span style="color:#0056b3; font-weight:bold;">[ແຜນວຽກມື້ຕໍ່ໄປ]</span>'
+                : '<span style="color:#cc0000; font-weight:bold;">[ວຽກປະຈຳວັນ]</span>';
 
-                let memberListHtml = '';
-                if (t.members && t.members.trim() !== '') {
-                    let memberArray = t.members.split(/[,，\s]+/);
-                    let listNum = 1;
-                    memberArray.forEach(m => { if (m.trim() !== '') { memberListHtml += `<div style="padding-left: 10px;">${listNum}. ${m.trim()}</div>`; listNum++; } });
-                } else { memberListHtml = '<span style="color:#999;">- ບໍ່ມີ -</span>'; }
+            let memberListHtml = '';
+            if (t.members && t.members.trim() !== '') {
+                let memberArray = t.members.split(/[,，\s]+/);
+                let listNum = 1;
+                memberArray.forEach(m => { if (m.trim() !== '') { memberListHtml += `<div style="padding-left: 10px;">${listNum}. ${m.trim()}</div>`; listNum++; } });
+            } else { memberListHtml = '<span style="color:#999;">- ບໍ່ມີ -</span>'; }
 
-                const expectedCell = note.expected !== null
-                    ? `<span style="color:#1d4ed8;">${note.expected}%</span>`
-                    : '<span style="color:#999;">-</span>';
+            const expectedCell = note.expected !== null
+                ? `<span style="color:#1d4ed8;">${note.expected}%</span>`
+                : '<span style="color:#999;">-</span>';
 
-                let noteCell = '<span style="color:#999;">-</span>';
-                if (note.text) {
-                    const bg = note.isCarry ? '#eff6ff' : '#f1f5f9';
-                    const bd = note.isCarry ? '#1d4ed8' : '#64748b';
-                    const tx = note.isCarry ? '#1e40af' : '#1e293b';
-                    noteCell = `<div style="background-color:${bg}; padding:6px 8px; border-left:4px solid ${bd}; color:${tx}; font-size:12px; font-weight:bold; border-radius:4px;">${note.text}</div>`;
-                }
+            let noteCell = '<span style="color:#999;">-</span>';
+            if (note.text) {
+                const bg = note.isCarry ? '#eff6ff' : '#f1f5f9';
+                const bd = note.isCarry ? '#1d4ed8' : '#64748b';
+                const tx = note.isCarry ? '#1e40af' : '#1e293b';
+                noteCell = `<div style="background-color:${bg}; padding:6px 8px; border-left:4px solid ${bd}; color:${tx}; font-size:12px; font-weight:bold; border-radius:4px;">${note.text}</div>`;
+            }
 
-                htmlContent += `
+            return `
                     <tr style="background-color: ${i % 2 === 0 ? '#ffffff' : '#f8fafc'};">
                         <td style="padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${i + 1}</td>
                         <td style="padding: 10px; border: 1px solid #cbd5e1; vertical-align: top;">
@@ -685,14 +690,71 @@
                             ${noteCell}
                         </td>
                     </tr>`;
-            });
+        }
 
-            htmlContent += `</tbody></table>
-                <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px; font-family: 'Noto Sans Lao'; padding: 0 10px;">
+        function reportSignatureHtml() {
+            return `<div data-part="sig" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px; font-family: 'Noto Sans Lao'; padding: 0 10px;">
                     <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ລາຍງານ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
                     <div style="text-align: center; width: 220px;"><p style="margin-bottom: 45px; font-weight: bold;">ຜູ້ກວດກາ / ຜູ້ອານຸມັດ</p><p style="border-top: 1px solid #64748b; padding-top: 5px; color:#475569;">( ............................................ )</p></div>
                 </div>`;
-            return htmlContent;
+        }
+
+        // ລາຍງານໜ້າດຽວຍາວ (ໃຊ້ກັບ JPEG)
+        function generateReportHTML() {
+            const rows = allTasks.map((t, i) => reportRowHtml(t, i)).join('');
+            return reportTopHtml() + reportTableOpen() + reportTheadHtml() + `<tbody>${rows}</tbody></table>` + reportSignatureHtml();
+        }
+
+        // ລາຍງານແບ່ງໜ້າ A4 ແນວນອນ: ທຸກໜ້າມີຫົວຕາຕະລາງ ແລະ ບໍ່ຕັດແຖວກາງໜ້າ (ໃຊ້ກັບ PDF)
+        const PDF_W = 1110;   // ຄວາມກວ້າງລວມ (px) = 1060 + padding ຂ້າງລະ 25
+        function buildPagedReportHTML() {
+            // ຄວາມສູງໜ້າ A4 ແນວນອນ (ຂອບ 8mm): 281 x 194 mm -> ປ່ຽນເປັນ px ຕາມຄວາມກວ້າງ, ເຫຼືອໄວ້ 6% ກັນຄາດເຄື່ອນ
+            const pageH = Math.floor(PDF_W * 194 / 281 * 0.94);
+            const padTop = 20;
+            const usable = pageH - padTop;
+            const pageStyle = `box-sizing:border-box; width:${PDF_W}px; padding:${padTop}px 25px 0 25px; background:#fff;`;
+
+            // 1) ວັດແທກຄວາມສູງຈິງຂອງແຕ່ລະສ່ວນ
+            const rowsHtml = allTasks.map((t, i) => reportRowHtml(t, i)).join('');
+            const probe = document.createElement('div');
+            probe.style.cssText = `position:absolute; left:-99999px; top:0; ${pageStyle}`;
+            probe.innerHTML = reportTopHtml() + reportTableOpen() + reportTheadHtml() + `<tbody>${rowsHtml}</tbody></table>` + reportSignatureHtml();
+            document.body.appendChild(probe);
+            const topH = probe.querySelector('[data-part="top"]').getBoundingClientRect().height + 20;
+            const theadH = probe.querySelector('thead').getBoundingClientRect().height;
+            const rowHs = Array.from(probe.querySelectorAll('tbody tr')).map(r => r.getBoundingClientRect().height);
+            const sigH = probe.querySelector('[data-part="sig"]').getBoundingClientRect().height + 40;
+            document.body.removeChild(probe);
+
+            // 2) ຈັດແຖວລົງແຕ່ລະໜ້າ
+            const pages = [[]];
+            let used = topH + theadH;
+            rowHs.forEach((h, i) => {
+                if (used + h > usable && pages[pages.length - 1].length > 0) {
+                    pages.push([]);
+                    used = theadH;
+                }
+                pages[pages.length - 1].push(i);
+                used += h;
+            });
+            const sigOwnPage = used + sigH > usable;
+
+            // 3) ສ້າງ HTML ແຕ່ລະໜ້າ (ຫົວຕາຕະລາງຊ້ຳທຸກໜ້າ)
+            const totalPages = pages.length + (sigOwnPage ? 1 : 0);
+            let html = '';
+            pages.forEach((idxs, p) => {
+                const isLast = p === totalPages - 1;
+                const rows = idxs.map(i => reportRowHtml(allTasks[i], i)).join('');
+                html += `<div style="${pageStyle} ${isLast ? '' : 'page-break-after: always;'}">`
+                      + (p === 0 ? reportTopHtml() : '')
+                      + reportTableOpen() + reportTheadHtml() + `<tbody>${rows}</tbody></table>`
+                      + ((p === pages.length - 1 && !sigOwnPage) ? reportSignatureHtml() : '')
+                      + `</div>`;
+            });
+            if (sigOwnPage) {
+                html += `<div style="${pageStyle}">${reportSignatureHtml()}</div>`;
+            }
+            return html;
         }
 
         function exportToExcel() {
@@ -717,14 +779,14 @@
 
         function exportToPDF() {
             const reportDiv = document.createElement('div');
-            reportDiv.style.padding = '25px';
-            reportDiv.style.width = '1060px';
+            reportDiv.style.width = PDF_W + 'px';
             reportDiv.style.backgroundColor = '#ffffff';
-            reportDiv.innerHTML = generateReportHTML();
+            reportDiv.innerHTML = buildPagedReportHTML();
 
             html2pdf().set({
                 margin: [8, 8, 8, 8],
                 filename: `Report_B_One_${todayStr}.pdf`,
+                pagebreak: { mode: ['css'] },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             }).from(reportDiv).save().then(() => showNotification("ດາວໂຫຼດ PDF ສຳເລັດ!"));
